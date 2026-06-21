@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Miller Kitchen v4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+:root {
+  --coal:#1a1612;--ember:#c4622d;--ember-dim:#8a3f1a;--cream:#f7f2eb;
+  --smoke:#2e2720;--ash:#6b5f54;--white:#fdfaf6;--gold:#d4a853;
+  --success:#4a7c59;--radius:12px;
+  --fd:'Playfair Display',Georgia,serif;--fb:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--coal);color:var(--cream);font-family:var(--fb);min-height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto}
+.hdr{padding:20px 20px 0;background:var(--coal);position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid rgba(196,98,45,0.25)}
+.brand-sub{font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--ember);margin-bottom:2px}
+.brand-name{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--white);letter-spacing:-0.02em}
+.ver{font-size:10px;color:var(--ash)}
+.dot{width:8px;height:8px;background:var(--success);border-radius:50%;animation:pulse 2s infinite;margin-bottom:3px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.nav{display:flex;padding:12px 0 0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.tab{background:none;border:none;color:var(--ash);font-family:var(--fb);font-size:11px;font-weight:500;letter-spacing:0.05em;padding:8px 12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase}
+.tab:first-child{padding-left:0}
+.tab.on{color:var(--ember);border-bottom-color:var(--ember)}
+.main{flex:1;padding:20px;overflow-y:auto;padding-bottom:80px}
+.panel{display:none}.panel.on{display:block}
+
+/* CHAT */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 185px)}
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:12px;scrollbar-width:none}
+.msgs::-webkit-scrollbar{display:none}
+.msg{display:flex;flex-direction:column;gap:3px}
+.msg.u{align-items:flex-end}.msg.a{align-items:flex-start}
+.bub{max-width:88%;padding:11px 15px;border-radius:var(--radius);font-size:14px;line-height:1.55}
+.msg.u .bub{background:var(--ember);color:var(--white);border-bottom-right-radius:4px}
+.msg.a .bub{background:var(--smoke);color:var(--cream);border-bottom-left-radius:4px;border:1px solid rgba(196,98,45,0.15)}
+.bub strong{color:var(--gold);font-weight:600}
+.mt{font-size:10px;color:var(--ash);padding:0 3px}
+.typ{display:none;align-items:center;gap:4px;padding:10px 14px;background:var(--smoke);border-radius:var(--radius);border-bottom-left-radius:4px;border:1px solid rgba(196,98,45,0.15);width:fit-content;margin-bottom:4px}
+.typ.on{display:flex}
+.td{width:6px;height:6px;background:var(--ash);border-radius:50%;animation:td 1.2s infinite}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.inp-area{padding-top:10px;border-top:1px solid rgba(196,98,45,0.2)}
+.qps{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+.qps::-webkit-scrollbar{display:none}
+.qp{background:var(--smoke);border:1px solid rgba(196,98,45,0.3);color:var(--cream);font-family:var(--fb);font-size:11px;padding:5px 11px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.qp:active{background:var(--ember-dim);border-color:var(--ember)}
+.inp-row{display:flex;gap:9px;align-items:flex-end}
+.ci{flex:1;background:var(--smoke);border:1px solid rgba(196,98,45,0.3);border-radius:var(--radius);color:var(--cream);font-family:var(--fb);font-size:14px;padding:11px 13px;resize:none;min-height:44px;max-height:110px;outline:none;transition:border-color 0.2s;line-height:1.4}
+.ci:focus{border-color:var(--ember)}
+.ci::placeholder{color:var(--ash)}
+.sb{background:var(--ember);border:none;border-radius:var(--radius);color:var(--white);cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;flex-shrink:0}
+.sb:hover{background:var(--ember-dim)}.sb:disabled{opacity:.4;cursor:not-allowed}
+.sb svg{width:17px;height:17px}
+
+/* WEEK */
+.slbl{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--ember);margin-bottom:14px}
+.act-card{background:linear-gradient(135deg,var(--ember-dim),var(--ember));border-radius:var(--radius);padding:15px 17px;margin-bottom:12px;cursor:pointer;transition:opacity 0.2s}
+.act-card:hover{opacity:.9}
+.act-lbl{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:3px}
+.act-title{font-family:var(--fd);font-size:17px;color:var(--white)}
+.week-actions{display:flex;gap:8px;margin-bottom:14px}
+.wbtn{flex:1;padding:9px 8px;border-radius:10px;border:1px solid rgba(196,98,45,0.3);background:var(--smoke);color:var(--cream);font-family:var(--fb);font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;text-align:center}
+.wbtn:hover{border-color:var(--ember);color:var(--ember)}
+.wbtn.danger{border-color:rgba(107,95,84,0.4);color:var(--ash)}
+.day-cards{display:flex;flex-direction:column;gap:9px}
+.dc{background:var(--smoke);border:1px solid rgba(196,98,45,0.15);border-radius:var(--radius);padding:13px 15px;transition:border-color 0.2s}
+.dc.lft{border-left:3px solid var(--gold)}
+.dc-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.dname{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ash)}
+.dbadge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.bl{background:rgba(212,168,83,.2);color:var(--gold)}
+.bb{background:rgba(196,98,45,.2);color:var(--ember)}
+.bs{background:rgba(46,39,32,.8);color:var(--ash);border:1px solid var(--ash)}
+.dmeal{font-family:var(--fd);font-size:16px;color:var(--white);margin-bottom:3px;line-height:1.3}
+.dmeta{font-size:12px;color:var(--ash)}
+
+/* MANUAL ENTRY */
+.manual-form{background:var(--smoke);border:1px solid rgba(196,98,45,0.2);border-radius:var(--radius);padding:15px;margin-bottom:14px;display:none}
+.mf-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ember);margin-bottom:11px}
+.mf-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.mf-day{font-size:12px;color:var(--ash);width:85px;flex-shrink:0}
+.mf-inp{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--cream);font-family:var(--fb);font-size:13px;padding:7px 10px;outline:none}
+.mf-inp:focus{border-color:rgba(196,98,45,.4)}
+.mf-inp::placeholder{color:var(--ash);opacity:.6}
+.mf-save{width:100%;margin-top:10px;padding:11px;background:var(--ember);border:none;border-radius:10px;color:white;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer}
+.mf-cancel{width:100%;margin-top:5px;padding:7px;background:none;border:none;color:var(--ash);font-family:var(--fb);font-size:12px;cursor:pointer}
+
+/* SHOPPING */
+.shop-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.shop-meta{font-size:11px;color:var(--ash)}
+.shop-acts{display:flex;gap:7px;margin-bottom:14px}
+.sa{flex:1;padding:9px 6px;border-radius:10px;border:1px solid rgba(196,98,45,.3);background:var(--smoke);color:var(--cream);font-family:var(--fb);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center}
+.sa:hover{border-color:var(--ember);color:var(--ember)}
+.sa.pri{background:var(--ember);border-color:var(--ember);color:white}
+.sa.pri:hover{background:var(--ember-dim)}
+.prog-lbl{font-size:11px;color:var(--ash);margin-bottom:5px;display:flex;justify-content:space-between}
+.prog{background:rgba(255,255,255,.06);border-radius:4px;height:4px;margin-bottom:18px;overflow:hidden}
+.prog-bar{height:100%;background:var(--success);border-radius:4px;transition:width .4s ease}
+.pw{background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.3);border-radius:10px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--gold);line-height:1.5;display:none}
+.pw strong{display:block;font-size:10px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.store-sec{margin-bottom:22px}
+.store-hdr{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.06)}
+.store-ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.ico-w{background:rgba(0,100,50,.3)}.ico-c{background:rgba(220,30,30,.2)}.ico-b{background:rgba(196,98,45,.25)}.ico-m{background:rgba(107,95,84,.3)}
+.store-name{font-size:13px;font-weight:600;color:var(--white);flex:1}
+.store-cnt{font-size:11px;color:var(--ash)}
+.sitems{display:flex;flex-direction:column;gap:2px}
+.si{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;background:var(--smoke);cursor:pointer;border:1px solid transparent;transition:all .2s;position:relative}
+.si:hover{border-color:rgba(196,98,45,.2)}
+.si.chk{opacity:.4}
+.si.chk .si-name{text-decoration:line-through;color:var(--ash)}
+.si-chk{width:19px;height:19px;border-radius:5px;border:2px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.si.chk .si-chk{background:var(--success);border-color:var(--success)}
+.si-chk svg{display:none;width:11px;height:11px}
+.si.chk .si-chk svg{display:block}
+.si-body{flex:1;min-width:0}
+.si-name{font-size:13px;color:var(--cream);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-det{font-size:11px;color:var(--ash);margin-top:1px}
+.si-tag{font-size:10px;padding:2px 7px;border-radius:8px;flex-shrink:0}
+.te{background:rgba(196,98,45,.2);color:var(--ember)}
+.to{background:rgba(107,95,84,.3);color:var(--ash)}
+.tl{background:rgba(212,168,83,.2);color:var(--gold)}
+.si-del{background:none;border:none;color:var(--ash);cursor:pointer;font-size:16px;padding:0 3px;opacity:0;transition:opacity .2s;flex-shrink:0}
+.si:hover .si-del{opacity:1}
+.add-row{display:flex;gap:7px;margin-top:7px;padding:7px 11px;border-radius:8px;border:1px dashed rgba(196,98,45,.3);align-items:center}
+.add-inp{flex:1;background:none;border:none;color:var(--cream);font-family:var(--fb);font-size:13px;outline:none}
+.add-inp::placeholder{color:rgba(107,95,84,.7)}
+.add-btn{background:none;border:none;color:var(--ember);cursor:pointer;font-size:20px;line-height:1;padding:0}
+.shop-empty{text-align:center;padding:40px 16px}
+.se-icon{font-size:38px;display:block;margin-bottom:12px}
+.se-title{font-family:var(--fd);font-size:19px;color:var(--white);margin-bottom:7px}
+.se-text{font-size:13px;color:var(--ash);line-height:1.6}
+.gen-btn{margin-top:18px;padding:13px 22px;background:var(--ember);border:none;border-radius:var(--radius);color:white;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.gen-btn:hover{background:var(--ember-dim)}
+.gen-over{display:none;flex-direction:column;align-items:center;justify-content:center;padding:44px 16px;gap:14px;text-align:center}
+.gen-over.on{display:flex}
+.gs{width:34px;height:34px;border:3px solid rgba(196,98,45,.2);border-top-color:var(--ember);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gl{font-size:13px;color:var(--ash)}
+.gt{font-family:var(--fd);font-size:17px;color:var(--white)}
+
+/* RATE */
+.rc{background:var(--smoke);border:1px solid rgba(196,98,45,.15);border-radius:var(--radius);padding:19px;margin-bottom:14px}
+.rm{font-family:var(--fd);font-size:19px;color:var(--white);margin-bottom:3px}
+.rd{font-size:11px;color:var(--ash);margin-bottom:18px}
+.rr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rn{font-size:13px;font-weight:500;color:var(--cream);width:68px}
+.sr{display:flex;gap:5px}
+.star{width:26px;height:26px;background:none;border:none;cursor:pointer;font-size:19px;line-height:1;opacity:.3;transition:opacity .15s,transform .15s;padding:0}
+.star.on{opacity:1}.star:hover{transform:scale(1.2)}
+.sd{font-size:17px;font-weight:700;color:var(--ember);width:30px;text-align:right}
+.car{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid rgba(255,255,255,.06);margin-top:2px}
+.cal{font-size:13px;color:var(--cream)}
+.tr{display:flex;gap:7px}
+.tb{padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:none;color:var(--ash);font-size:12px;font-family:var(--fb);cursor:pointer;transition:all .2s}
+.tb.sy{background:rgba(74,124,89,.25);border-color:var(--success);color:var(--success)}
+.tb.sn{background:rgba(196,98,45,.2);border-color:var(--ember);color:var(--ember)}
+.ni{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--cream);font-family:var(--fb);font-size:13px;padding:9px 11px;resize:none;height:65px;outline:none;margin-top:10px}
+.ni::placeholder{color:var(--ash)}.ni:focus{border-color:rgba(196,98,45,.4)}
+.sub-btn{width:100%;padding:13px;background:var(--ember);border:none;border-radius:var(--radius);color:white;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;margin-top:14px;transition:background .2s}
+.sub-btn:hover{background:var(--ember-dim)}
+
+/* DB */
+.db-sec{margin-bottom:26px}
+.db-title{font-family:var(--fd);font-size:17px;color:var(--white);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.db-cnt{font-family:var(--fb);font-size:11px;background:rgba(196,98,45,.2);color:var(--ember);padding:2px 8px;border-radius:10px}
+.db-list{display:flex;flex-direction:column;gap:7px}
+.db-item{background:var(--smoke);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center}
+.dbi-l{display:flex;flex-direction:column;gap:2px}
+.dbi-n{font-size:13px;color:var(--white);font-weight:500}
+.dbi-m{font-size:11px;color:var(--ash)}
+.dbi-s{font-family:var(--fd);font-size:19px;font-weight:700;color:var(--ember)}
+.div{height:1px;background:rgba(255,255,255,.06);margin:18px 0}
+
+/* PANTRY */
+.ps{width:100%;background:var(--smoke);border:1px solid rgba(196,98,45,.3);border-radius:var(--radius);color:var(--cream);font-family:var(--fb);font-size:14px;padding:11px 13px;outline:none;margin-bottom:14px}
+.ps:focus{border-color:var(--ember)}.ps::placeholder{color:var(--ash)}
+.pcat{margin-bottom:18px}
+.pcat-lbl{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--ash);margin-bottom:7px}
+.pitems{display:flex;flex-wrap:wrap;gap:7px}
+.pc{padding:5px 11px;border-radius:20px;font-size:12px;border:1px solid;cursor:pointer;transition:all .2s;font-family:var(--fb)}
+.pc.in{background:rgba(74,124,89,.15);border-color:rgba(74,124,89,.4);color:#7bc49a}
+.pc.lo{background:rgba(212,168,83,.1);border-color:rgba(212,168,83,.4);color:var(--gold)}
+.pc.ou{background:rgba(196,98,45,.1);border-color:rgba(196,98,45,.3);color:var(--ember)}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="brand-sub">Sandton · Gauteng</div>
+      <div class="brand-name">Miller Kitchen</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+      <div class="dot"></div>
+      <div class="ver">v4 · Chef Active</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="tab on" onclick="go('chat')">Chef</button>
+    <button class="tab" onclick="go('week')">This Week</button>
+    <button class="tab" onclick="go('shop')">Shopping</button>
+    <button class="tab" onclick="go('rate')">Rate</button>
+    <button class="tab" onclick="go('db')">Favourites</button>
+    <button class="tab" onclick="go('pantry')">Pantry</button>
+  </nav>
+</header>
+
+<main class="main">
+
+<!-- CHEF -->
+<div class="panel on" id="p-chat">
+  <div class="chat-wrap">
+    <div class="msgs" id="msgs">
+      <div class="msg a">
+        <div class="bub"><strong>Welcome back, Stuart.</strong><br><br>Ask me anything — meals, recipes, braai, smoker — or start this week's planning session.<br><br>After we lock the menu, use the <strong>This Week</strong> tab to enter meals manually, then hit <strong>Shopping</strong> to generate the list.</div>
+        <span class="mt">Now</span>
+      </div>
+    </div>
+    <div class="typ" id="typ"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+    <div class="inp-area">
+      <div class="qps">
+        <button class="qp" onclick="qp('Start Sunday planning session for this week')">🗓 Plan Week</button>
+        <button class="qp" onclick="qp('What should I cook tonight?')">🍽 Tonight</button>
+        <button class="qp" onclick="qp('Give me a braai menu for this weekend')">🔥 Braai</button>
+        <button class="qp" onclick="qp('Suggest a great Ottolenghi-style salad')">🥗 Salad</button>
+        <button class="qp" onclick="qp('Traeger smoker ideas for this weekend')">💨 Smoker</button>
+      </div>
+      <div class="inp-row">
+        <textarea class="ci" id="ci" placeholder="Ask your chef..." rows="1"
+          onkeydown="ky(event)" oninput="ar(this)"></textarea>
+        <button class="sb" id="sb" onclick="send()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THIS WEEK -->
+<div class="panel" id="p-week">
+  <div class="slbl">Week of 21 June 2026</div>
+  <div class="act-card" onclick="go('chat');qp('Start Sunday planning session for this week')">
+    <div class="act-lbl">Ready to plan?</div>
+    <div class="act-title">Start Sunday Planning Session →</div>
+  </div>
+  <div class="week-actions">
+    <button class="wbtn" onclick="showMF()">✏️ Enter meals</button>
+    <button class="wbtn danger" onclick="clearWeek()">↺ Clear week</button>
+  </div>
+  <div class="manual-form" id="mf">
+    <div class="mf-title">Enter This Week's Meals</div>
+    <div class="mf-row"><span class="mf-day">Monday</span><input class="mf-inp" id="mf-Mon" placeholder="Meal name..."></div>
+    <div class="mf-row"><span class="mf-day">Tuesday</span><input class="mf-inp" id="mf-Tue" placeholder="Leftover or meal..."></div>
+    <div class="mf-row"><span class="mf-day">Wednesday</span><input class="mf-inp" id="mf-Wed" placeholder="Meal name..."></div>
+    <div class="mf-row"><span class="mf-day">Thursday</span><input class="mf-inp" id="mf-Thu" placeholder="Leftover or meal..."></div>
+    <div class="mf-row"><span class="mf-day">Friday</span><input class="mf-inp" id="mf-Fri" placeholder="Meal name..."></div>
+    <div class="mf-row"><span class="mf-day">Saturday</span><input class="mf-inp" id="mf-Sat" placeholder="Braai / meal..."></div>
+    <div class="mf-row"><span class="mf-day">Sunday</span><input class="mf-inp" id="mf-Sun" placeholder="Smoker / meal..."></div>
+    <button class="mf-save" onclick="saveMF()">Save to This Week</button>
+    <button class="mf-cancel" onclick="hideMF()">Cancel</button>
+  </div>
+  <div class="day-cards" id="wk"></div>
+</div>
+
+<!-- SHOPPING -->
+<div class="panel" id="p-shop">
+  <div id="sh-empty">
+    <div class="shop-empty">
+      <span class="se-icon">🛒</span>
+      <div class="se-title">No list yet</div>
+      <div class="se-text">Enter your meals in <strong>This Week</strong> first, then come back here to generate the list.</div>
+      <button class="gen-btn" onclick="genList()">Generate Shopping List</button>
+    </div>
+  </div>
+  <div class="gen-over" id="sh-gen">
+    <div class="gs"></div>
+    <div class="gt">Building your list</div>
+    <div class="gl">Cross-checking pantry...</div>
+  </div>
+  <div id="sh-list" style="display:none">
+    <div class="shop-hdr">
+      <div><div class="slbl" style="margin-bottom:2px">Shopping List</div><div class="shop-meta" id="sh-meta">0 items remaining</div></div>
+      <button class="sa" style="width:auto;padding:7px 12px" onclick="clrChk()">Clear done</button>
+    </div>
+    <div class="prog-lbl"><span id="prog-lbl">0% complete</span><span id="prog-cnt"></span></div>
+    <div class="prog"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="shop-acts">
+      <button class="sa" onclick="unchk()">↺ Uncheck all</button>
+      <button class="sa pri" onclick="genList()">⟳ Regenerate</button>
+    </div>
+    <div class="pw" id="pw"><strong>⚠ Low pantry items included</strong><span id="pw-txt"></span></div>
+    <div id="sg"></div>
+  </div>
+</div>
+
+<!-- RATE -->
+<div class="panel" id="p-rate">
+  <div class="slbl">Rate Last Night's Meal</div>
+  <div class="rc">
+    <div class="rm">What did you cook?</div>
+    <div class="rd">Tell the chef below, then rate it</div>
+    <div class="rr"><span class="rn">Stuart</span><div class="sr" id="s-s"></div><span class="sd" id="sc-s">—</span></div>
+    <div class="rr"><span class="rn">Nicola</span><div class="sr" id="s-n"></div><span class="sd" id="sc-n">—</span></div>
+    <div class="rr"><span class="rn">Kids</span><div class="sr" id="s-k"></div><span class="sd" id="sc-k">—</span></div>
+    <div class="car">
+      <span class="cal">Cook again?</span>
+      <div class="tr">
+        <button class="tb" id="by" onclick="ca('y')">Yes</button>
+        <button class="tb" id="bn" onclick="ca('n')">No</button>
+      </div>
+    </div>
+    <textarea class="ni" id="rn" placeholder="What worked? What needs improving?"></textarea>
+    <button class="sub-btn" onclick="subRating()">Save Rating & Send to Chef</button>
+  </div>
+</div>
+
+<!-- FAVOURITES -->
+<div class="panel" id="p-db">
+  <div class="slbl">Family Learning Database</div>
+  <div class="db-sec">
+    <div class="db-title">Top Family Meals <span class="db-cnt">Pending</span></div>
+    <div class="db-list"><div class="db-item"><div class="dbi-l"><span class="dbi-n">No meals rated yet</span><span class="dbi-m">Rate meals to build this list</span></div><span class="dbi-s">—</span></div></div>
+  </div>
+  <div class="div"></div>
+  <div class="db-sec">
+    <div class="db-title">Braai Favourites <span class="db-cnt">Pending</span></div>
+    <div class="db-list"><div class="db-item"><div class="dbi-l"><span class="dbi-n">No braai meals rated yet</span><span class="dbi-m">Fire it up and rate it</span></div><span class="dbi-s">—</span></div></div>
+  </div>
+  <div class="div"></div>
+  <div class="db-sec">
+    <div class="db-title">Smoker Dishes <span class="db-cnt">Pending</span></div>
+    <div class="db-list"><div class="db-item"><div class="dbi-l"><span class="dbi-n">No smoker meals rated yet</span><span class="dbi-m">Get the Traeger running</span></div><span class="dbi-s">—</span></div></div>
+  </div>
+</div>
+
+<!-- PANTRY -->
+<div class="panel" id="p-pantry">
+  <div class="slbl">Pantry Status</div>
+  <input class="ps" placeholder="Search pantry..." oninput="fpantry(this.value)">
+  <div class="pcat"><div class="pcat-lbl">Proteins (Freezer)</div><div class="pitems">
+    <span class="pc in" data-item="Chicken thighs">Chicken thighs</span>
+    <span class="pc lo" data-item="Ribeye">Ribeye</span>
+    <span class="pc ou" data-item="Salmon">Salmon</span>
+    <span class="pc in" data-item="Lamb rack">Lamb rack</span>
+    <span class="pc ou" data-item="Prawns">Prawns</span>
+    <span class="pc in" data-item="Pork belly">Pork belly</span>
+    <span class="pc in" data-item="Short rib">Short rib</span>
+  </div></div>
+  <div class="pcat"><div class="pcat-lbl">Sauces & Condiments</div><div class="pitems">
+    <span class="pc in" data-item="Fish sauce">Fish sauce</span>
+    <span class="pc in" data-item="Soy sauce">Soy sauce</span>
+    <span class="pc in" data-item="Oyster sauce">Oyster sauce</span>
+    <span class="pc lo" data-item="Miso paste">Miso paste</span>
+    <span class="pc in" data-item="Harissa">Harissa</span>
+    <span class="pc in" data-item="Tahini">Tahini</span>
+    <span class="pc ou" data-item="Gochujang">Gochujang</span>
+    <span class="pc in" data-item="Dijon mustard">Dijon mustard</span>
+  </div></div>
+  <div class="pcat"><div class="pcat-lbl">Dry Pantry</div><div class="pitems">
+    <span class="pc in" data-item="Arborio rice">Arborio rice</span>
+    <span class="pc in" data-item="Pasta">Pasta (various)</span>
+    <span class="pc in" data-item="Chickpeas">Chickpeas</span>
+    <span class="pc lo" data-item="Panko">Panko</span>
+    <span class="pc in" data-item="Coconut milk">Coconut milk</span>
+    <span class="pc in" data-item="Stock">Stock (various)</span>
+    <span class="pc in" data-item="Jasmine rice">Jasmine rice</span>
+  </div></div>
+  <div class="pcat"><div class="pcat-lbl">Spices & Aromatics</div><div class="pitems">
+    <span class="pc in" data-item="Smoked paprika">Smoked paprika</span>
+    <span class="pc in" data-item="Cumin">Cumin</span>
+    <span class="pc in" data-item="Coriander">Coriander</span>
+    <span class="pc in" data-item="Za'atar">Za'atar</span>
+    <span class="pc in" data-item="Sumac">Sumac</span>
+    <span class="pc lo" data-item="Star anise">Star anise</span>
+    <span class="pc in" data-item="Dried chilli">Dried chilli</span>
+    <span class="pc in" data-item="Ras el hanout">Ras el hanout</span>
+  </div></div>
+  <p style="font-size:11px;color:var(--ash);text-align:center;margin-top:10px">Tap to cycle: green=in stock · gold=low · red=out</p>
+</div>
+
+</main>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const PROXY = 'https://miller-kitchen-proxy.stuart-miller95.workers.dev';
+
+const SYS = `You are the Miller Family Gourmet Home Chef for the Miller household in Sandton, Gauteng, South Africa.
+
+Household: Stuart and Nicola (adults), 3 kids aged 13, 11, 8. No allergies. Kids moderately adventurous (7/10). Avoid raw tomatoes, strongly fishy seafood. Preferred seafood: salmon, kingklip, prawns, snapper-style white fish.
+
+Proteins: ribeye, picanha, lamb rack, lamb shoulder, chicken thighs, pork belly, short rib, salmon, kingklip, prawns, tuna. No boring chicken or mediocre beef. No protein repeated more than twice per week.
+
+Cuisine preference: Thai 9/10, Vietnamese 9/10, Italian 8/10, French 8/10, SA braai 8/10, Turkish/Lebanese/Indian/Chinese/Japanese/Mexican 7/10, Moroccan 6/10, Greek/Spanish/Korean 5/10.
+
+Equipment: Traeger smoker, pizza oven, gas braai, air fryer, Thermomix, pressure cooker.
+
+Weekdays: 30-45 min, high flavour, minimal cleanup. 4 cook nights, 2 leftover nights per week. Weekends more ambitious.
+
+Health: Stuart wants weight loss + muscle maintenance. High protein for whole family. Stuart 250g daily protein intent, Nicola 180g.
+
+Challenge rule: If Stuart suggests a low-flavour idea, say "That will work, but there's a higher-flavour version worth considering" then explain weakness, better alternative, trade-off.
+
+Style: Never start with agreement. No filler phrases. Direct. Contractions always. Lead with main point. Vary sentence length. Keep responses concise for mobile.
+
+IMPORTANT: Never output JSON in chat responses. Keep all chat responses conversational plain text.`;
+
+const SHOP_SYS = `Generate a shopping list as pure JSON only. No text before or after. No markdown. No explanation.
+
+Structure:
+{"week":"Week of 21 June 2026","stores":[{"store":"Woolworths","icon":"🟢","items":[{"name":"item","detail":"qty — meals","essential":true,"pantryNote":""}]},{"store":"Checkers FreshX","icon":"🔴","items":[]},{"store":"Specialist Butcher","icon":"🔪","items":[]},{"store":"Manual / Other","icon":"📝","items":[]}],"lowPantryItems":[],"pantrySkipped":[]}
+
+Rules: Woolworths for premium produce/dairy/herbs. Checkers for bulk/staples. Butcher for premium cuts only. Skip IN STOCK pantry items unless large qty needed. Include LOW STOCK with pantryNote "low stock". Always include OUT OF STOCK items needed.`;
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const LDAYS = ['Tuesday','Friday'];
+let hist = [];
+let rats = {s:0,n:0,k:0};
+let ca_val = null;
+let sitems = [];
+let shopData = null;
+let week = {Monday:null,Tuesday:null,Wednesday:null,Thursday:null,Friday:null,Saturday:null,Sunday:null};
+
+// ── PERSIST ───────────────────────────────────────────────────────────────────
+function save() {
+  try {
+    localStorage.setItem('mk4_hist', JSON.stringify(hist));
+    localStorage.setItem('mk4_week', JSON.stringify(week));
+    if (shopData) localStorage.setItem('mk4_shop', JSON.stringify(shopData));
+    const ps = {};
+    document.querySelectorAll('.pc').forEach(c => {
+      ps[c.dataset.item] = c.classList.contains('in') ? 'in' : c.classList.contains('lo') ? 'lo' : 'ou';
+    });
+    localStorage.setItem('mk4_pantry', JSON.stringify(ps));
+  } catch(e){}
+}
+
+function load() {
+  try {
+    const h = localStorage.getItem('mk4_hist');
+    if (h) { hist = JSON.parse(h); hist.forEach(m => addMsg(m.role, m.content, true)); }
+    const w = localStorage.getItem('mk4_week');
+    if (w) { week = JSON.parse(w); }
+    const sd = localStorage.getItem('mk4_shop');
+    if (sd) { shopData = JSON.parse(sd); }
+    const p = localStorage.getItem('mk4_pantry');
+    if (p) {
+      const ps = JSON.parse(p);
+      document.querySelectorAll('.pc').forEach(c => {
+        const s = ps[c.dataset.item];
+        if (s) { c.className = 'pc ' + s; }
+      });
+    }
+  } catch(e){}
+  renderWeek();
+  if (shopData) { document.getElementById('sh-empty').style.display='none'; renderShop(shopData); }
+}
+
+function clearWeek() {
+  if (!confirm('Clear this week\'s meal plan?')) return;
+  week = {Monday:null,Tuesday:null,Wednesday:null,Thursday:null,Friday:null,Saturday:null,Sunday:null};
+  shopData = null;
+  sitems = [];
+  localStorage.removeItem('mk4_week');
+  localStorage.removeItem('mk4_shop');
+  renderWeek();
+  document.getElementById('sh-list').style.display='none';
+  document.getElementById('sh-empty').style.display='block';
+  document.getElementById('sh-empty').querySelector('.se-text').textContent='Enter your meals in This Week first, then come back here to generate the list.';
+  document.querySelector('.gen-btn').style.display='inline-block';
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+const TABS = ['chat','week','shop','rate','db','pantry'];
+function go(t) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p-'+t).classList.add('on');
+  document.querySelectorAll('.tab')[TABS.indexOf(t)].classList.add('on');
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────────
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px'}
+function ky(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
+function qp(t){document.getElementById('ci').value=t;send()}
+
+function fmt(c) {
+  return c.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g,'<em style="color:var(--ember);font-style:normal">$1</em>')
+          .replace(/\n/g,'<br>');
+}
+
+function addMsg(role, content, silent) {
+  const c = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ' + (role==='user'?'u':'a');
+  const t = silent ? '' : `<span class="mt">${new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})}</span>`;
+  d.innerHTML = `<div class="bub">${fmt(content)}</div>${t}`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+async function send() {
+  const inp = document.getElementById('ci');
+  const btn = document.getElementById('sb');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value=''; inp.style.height='auto'; btn.disabled=true;
+  addMsg('user', txt);
+  hist.push({role:'user',content:txt});
+  const typ = document.getElementById('typ');
+  typ.classList.add('on');
+  document.getElementById('msgs').scrollTop=99999;
+  try {
+    const res = await fetch(PROXY, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:SYS,messages:hist})
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Something went wrong. Try again.';
+    hist.push({role:'assistant',content:reply});
+    typ.classList.remove('on');
+    addMsg('assistant', reply);
+    save();
+  } catch(e) {
+    typ.classList.remove('on');
+    addMsg('assistant','Connection issue. Check your network and try again.');
+  }
+  btn.disabled=false;
+  inp.focus();
+}
+
+// ── WEEK ──────────────────────────────────────────────────────────────────────
+function renderWeek() {
+  const c = document.getElementById('wk');
+  if (!c) return;
+  c.innerHTML='';
+  DAYS.forEach(day => {
+    const d = week[day];
+    const isLft = d && d.lft;
+    const isSat = day==='Saturday', isSun=day==='Sunday';
+    const div = document.createElement('div');
+    div.className = 'dc' + (isLft?' lft':'');
+    let badge = '';
+    if (isLft) badge='<span class="dbadge bl">Leftover Night</span>';
+    else if (isSat) badge='<span class="dbadge bb">Braai / Weekend</span>';
+    else if (isSun) badge='<span class="dbadge bs">Smoker Day</span>';
+    if (d && !isLft) {
+      div.innerHTML=`<div class="dc-hdr"><span class="dname">${day}</span>${badge}</div><div class="dmeal">${d.meal}</div>${d.prot?`<div class="dmeta">${d.prot}</div>`:''}`;
+    } else if (isLft) {
+      div.innerHTML=`<div class="dc-hdr"><span class="dname">${day}</span>${badge}</div><div class="dmeal">Leftover Night</div>`;
+    } else {
+      div.innerHTML=`<div class="dc-hdr"><span class="dname">${day}</span>${badge}</div><div class="dmeal" style="color:var(--ash);font-size:15px">No meal planned yet</div>`;
+    }
+    c.appendChild(div);
+  });
+}
+
+function showMF() { document.getElementById('mf').style.display='block'; }
+function hideMF() { document.getElementById('mf').style.display='none'; }
+
+function saveMF() {
+  const map = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+  let changed=false;
+  Object.entries(map).forEach(([k,day]) => {
+    const v = document.getElementById('mf-'+k).value.trim();
+    if (!v) return;
+    changed=true;
+    const isLft = v.toLowerCase().includes('leftover') || LDAYS.includes(day);
+    week[day] = isLft ? {lft:true,meal:'Leftover Night',prot:''} : {lft:false,meal:v,prot:''};
+  });
+  if (changed) { renderWeek(); save(); hideMF(); }
+}
+
+// ── SHOPPING ──────────────────────────────────────────────────────────────────
+function getPantry() {
+  const s={in:[],lo:[],ou:[]};
+  document.querySelectorAll('.pc').forEach(c=>{
+    const n=c.dataset.item;
+    if(c.classList.contains('in'))s.in.push(n);
+    else if(c.classList.contains('lo'))s.lo.push(n);
+    else s.ou.push(n);
+  });
+  return s;
+}
+
+async function genList() {
+  go('shop');
+  document.getElementById('sh-empty').style.display='none';
+  document.getElementById('sh-list').style.display='none';
+  document.getElementById('sh-gen').classList.add('on');
+
+  const p = getPantry();
+  const menu = DAYS.map(d=>{
+    const m=week[d];
+    if(!m) return `${d}: not planned`;
+    if(m.lft) return `${d}: Leftover Night`;
+    return `${d}: ${m.meal}`;
+  }).join('\n');
+
+  const prompt = `Generate the shopping list for this week:\n${menu}\n\nPantry:\nIN STOCK (skip unless large qty): ${p.in.join(', ')||'none'}\nLOW STOCK (include, flag): ${p.lo.join(', ')||'none'}\nOUT OF STOCK (always include if needed): ${p.ou.join(', ')||'none'}\n\nJSON only. No text. No markdown.`;
+
+  try {
+    const res = await fetch(PROXY, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,system:SHOP_SYS,
+        messages:[...hist,{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text||'';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('No JSON');
+    shopData = JSON.parse(match[0]);
+    renderShop(shopData);
+    save();
+  } catch(e) {
+    document.getElementById('sh-gen').classList.remove('on');
+    document.getElementById('sh-empty').style.display='block';
+    document.getElementById('sh-empty').querySelector('.se-text').textContent='Could not generate list. Check your connection and try again.';
+  }
+}
+
+function renderShop(data) {
+  document.getElementById('sh-gen').classList.remove('on');
+  sitems=[];
+  const sg=document.getElementById('sg');
+  sg.innerHTML='';
+  data.stores.forEach(store=>{
+    if(!store.items||!store.items.length) return;
+    const sec=document.createElement('div');
+    sec.className='store-sec';
+    const ic=store.store.toLowerCase().includes('wool')?'ico-w':store.store.toLowerCase().includes('check')?'ico-c':store.store.toLowerCase().includes('butch')?'ico-b':'ico-m';
+    const hdr=document.createElement('div');
+    hdr.className='store-hdr';
+    hdr.innerHTML=`<div class="store-ico ${ic}">${store.icon}</div><span class="store-name">${store.store}</span><span class="store-cnt">${store.items.length} items</span>`;
+    const il=document.createElement('div');
+    il.className='sitems';
+    store.items.forEach((item,i)=>{
+      const id=`si-${store.store.replace(/\W/g,'')}-${i}`;
+      const isLo=item.pantryNote&&item.pantryNote.includes('low');
+      sitems.push({id,chk:false});
+      const tc=isLo?'tl':item.essential?'te':'to';
+      const tt=isLo?'Low stock':item.essential?'Essential':'Optional';
+      const row=document.createElement('div');
+      row.className='si'; row.id=id; row.onclick=()=>togSI(id);
+      row.innerHTML=`<div class="si-chk"><svg viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8.5 11 1"></polyline></svg></div><div class="si-body"><div class="si-name">${item.name}</div>${item.detail?`<div class="si-det">${item.detail}</div>`:''}</div><span class="si-tag ${tc}">${tt}</span><button class="si-del" onclick="delSI(event,'${id}')">×</button>`;
+      il.appendChild(row);
+    });
+    const ar2=document.createElement('div');
+    ar2.className='add-row';
+    ar2.innerHTML=`<input class="add-inp" placeholder="Add item..." onkeydown="addKey(event,this,'${store.store}')"><button class="add-btn" onclick="addFromInp(this.previousElementSibling,'${store.store}')">+</button>`;
+    sec.appendChild(hdr); sec.appendChild(il); sec.appendChild(ar2);
+    sg.appendChild(sec);
+  });
+  if(data.lowPantryItems&&data.lowPantryItems.length){
+    document.getElementById('pw').style.display='block';
+    document.getElementById('pw-txt').textContent=' Low stock items included: '+data.lowPantryItems.join(', ');
+  }
+  document.getElementById('sh-list').style.display='block';
+  updProg();
+}
+
+function togSI(id){const i=sitems.find(x=>x.id===id);if(!i)return;i.chk=!i.chk;document.getElementById(id).classList.toggle('chk',i.chk);updProg()}
+function delSI(e,id){e.stopPropagation();const el=document.getElementById(id);if(el)el.remove();sitems=sitems.filter(x=>x.id!==id);updProg()}
+function addKey(e,inp,store){if(e.key==='Enter')addFromInp(inp,store)}
+function addFromInp(inp,store){
+  const v=inp.value.trim();if(!v)return;
+  const id='m-'+Date.now();sitems.push({id,chk:false});
+  const row=document.createElement('div');
+  row.className='si';row.id=id;row.onclick=()=>togSI(id);
+  row.innerHTML=`<div class="si-chk"><svg viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8.5 11 1"></polyline></svg></div><div class="si-body"><div class="si-name">${v}</div></div><span class="si-tag to">Added</span><button class="si-del" onclick="delSI(event,'${id}')">×</button>`;
+  inp.parentElement.before(row);inp.value='';updProg();
+}
+function updProg(){
+  const tot=sitems.length,done=sitems.filter(x=>x.chk).length,pct=tot?Math.round(done/tot*100):0;
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prog-lbl').textContent=pct+'% complete';
+  document.getElementById('prog-cnt').textContent=`${done}/${tot}`;
+  document.getElementById('sh-meta').textContent=`${tot-done} item${tot-done!==1?'s':''} remaining`;
+}
+function clrChk(){sitems.filter(x=>x.chk).forEach(x=>{const el=document.getElementById(x.id);if(el)el.remove()});sitems=sitems.filter(x=>!x.chk);updProg()}
+function unchk(){sitems.forEach(x=>{x.chk=false;const el=document.getElementById(x.id);if(el)el.classList.remove('chk')});updProg()}
+
+// ── RATINGS ───────────────────────────────────────────────────────────────────
+function bldStars(p){
+  const c=document.getElementById('s-'+p);
+  for(let i=1;i<=10;i++){const b=document.createElement('button');b.className='star';b.textContent='★';b.onclick=()=>setR(p,i);c.appendChild(b)}
+}
+function setR(p,s){
+  rats[p]=s;
+  document.querySelectorAll('#s-'+p+' .star').forEach((b,i)=>b.classList.toggle('on',i<s));
+  document.getElementById('sc-'+p).textContent=s;
+}
+function ca(v){ca_val=v;document.getElementById('by').className='tb'+(v==='y'?' sy':'');document.getElementById('bn').className='tb'+(v==='n'?' sn':'')}
+async function subRating(){
+  const notes=document.getElementById('rn').value;
+  const avg=((rats.s+rats.n+rats.k)/3).toFixed(1);
+  const msg=`Dinner rating:\nStuart: ${rats.s}/10\nNicola: ${rats.n}/10\nKids: ${rats.k}/10\nAverage: ${avg}/10\nCook again: ${ca_val==='y'?'Yes':ca_val==='n'?'No':'not specified'}\nNotes: ${notes||'none'}\n\nAcknowledge, update the Family Learning Database, and give me one specific improvement for next time.`;
+  go('chat');
+  document.getElementById('ci').value=msg;
+  await send();
+}
+
+// ── PANTRY ────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.pc').forEach(c=>{
+  c.addEventListener('click',()=>{
+    if(c.classList.contains('in')){c.className='pc lo'}
+    else if(c.classList.contains('lo')){c.className='pc ou'}
+    else{c.className='pc in'}
+    save();
+  });
+});
+function fpantry(q){const ql=q.toLowerCase();document.querySelectorAll('.pc').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(ql)?'':'none'})}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+bldStars('s');bldStars('n');bldStars('k');
+load();
+</script>
+</body>
+</html>
