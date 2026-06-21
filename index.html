@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Miller Kitchen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --coal: #1a1612;
+    --ember: #c4622d;
+    --ember-dim: #8a3f1a;
+    --cream: #f7f2eb;
+    --smoke: #2e2720;
+    --ash: #6b5f54;
+    --pale: #ede7dc;
+    --white: #fdfaf6;
+    --gold: #d4a853;
+    --success: #4a7c59;
+    --radius: 12px;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--coal);
+    color: var(--cream);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .app-header {
+    padding: 20px 20px 0;
+    background: var(--coal);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(196,98,45,0.25);
+  }
+
+  .brand { display: flex; flex-direction: column; }
+
+  .brand-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 2px;
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+
+  .header-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-label { font-size: 10px; color: var(--ash); letter-spacing: 0.05em; }
+
+  .nav-tabs {
+    display: flex;
+    padding: 12px 0 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--ash);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 8px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .tab-btn.active { color: var(--ember); border-bottom-color: var(--ember); }
+  .tab-btn:first-child { padding-left: 0; }
+
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    padding-bottom: 100px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CHAT ── */
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 16px;
+    scrollbar-width: none;
+  }
+  .chat-messages::-webkit-scrollbar { display: none; }
+
+  .message { display: flex; flex-direction: column; gap: 4px; }
+  .message.user { align-items: flex-end; }
+  .message.assistant { align-items: flex-start; }
+
+  .message-bubble {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .message.user .message-bubble {
+    background: var(--ember);
+    color: var(--white);
+    border-bottom-right-radius: 4px;
+  }
+
+  .message.assistant .message-bubble {
+    background: var(--smoke);
+    color: var(--cream);
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(196,98,45,0.15);
+  }
+
+  .message-time { font-size: 10px; color: var(--ash); padding: 0 4px; }
+
+  .typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    background: var(--smoke);
+    border-radius: var(--radius);
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(196,98,45,0.15);
+    width: fit-content;
+  }
+  .typing-indicator.visible { display: flex; }
+
+  .typing-dot {
+    width: 6px; height: 6px;
+    background: var(--ash);
+    border-radius: 50%;
+    animation: typing 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  .chat-input-area {
+    padding-top: 12px;
+    border-top: 1px solid rgba(196,98,45,0.2);
+  }
+
+  .quick-prompts {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+  }
+  .quick-prompts::-webkit-scrollbar { display: none; }
+
+  .quick-btn {
+    background: var(--smoke);
+    border: 1px solid rgba(196,98,45,0.3);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .quick-btn:hover, .quick-btn:active { background: var(--ember-dim); border-color: var(--ember); }
+
+  .input-row { display: flex; gap: 10px; align-items: flex-end; }
+
+  .chat-input {
+    flex: 1;
+    background: var(--smoke);
+    border: 1px solid rgba(196,98,45,0.3);
+    border-radius: var(--radius);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 12px 14px;
+    resize: none;
+    min-height: 46px;
+    max-height: 120px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.4;
+  }
+  .chat-input:focus { border-color: var(--ember); }
+  .chat-input::placeholder { color: var(--ash); }
+
+  .send-btn {
+    background: var(--ember);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--white);
+    cursor: pointer;
+    width: 46px; height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--ember-dim); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; }
+
+  /* ── WEEK ── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 14px;
+  }
+
+  .action-card {
+    background: linear-gradient(135deg, var(--ember-dim), var(--ember));
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .action-card:hover { opacity: 0.9; }
+  .action-card-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(255,255,255,0.7); margin-bottom: 4px;
+  }
+  .action-card-title { font-family: var(--font-display); font-size: 18px; color: var(--white); }
+
+  .day-cards { display: flex; flex-direction: column; gap: 10px; }
+
+  .day-card {
+    background: var(--smoke);
+    border: 1px solid rgba(196,98,45,0.15);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .day-card:hover { border-color: rgba(196,98,45,0.4); }
+  .day-card.leftover { border-left: 3px solid var(--gold); }
+
+  .day-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .day-name { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ash); }
+
+  .day-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .badge-leftover { background: rgba(212,168,83,0.2); color: var(--gold); }
+  .badge-braai { background: rgba(196,98,45,0.2); color: var(--ember); }
+  .badge-smoker { background: rgba(46,39,32,0.8); color: var(--ash); border: 1px solid var(--ash); }
+
+  .day-meal-name { font-family: var(--font-display); font-size: 17px; color: var(--white); margin-bottom: 4px; line-height: 1.3; }
+  .day-protein { font-size: 12px; color: var(--ash); }
+
+  /* ── SHOPPING LIST ── */
+  .shop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .shop-meta { font-size: 11px; color: var(--ash); }
+
+  .shop-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .shop-action-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(196,98,45,0.3);
+    background: var(--smoke);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .shop-action-btn:hover { border-color: var(--ember); color: var(--ember); }
+  .shop-action-btn.primary { background: var(--ember); border-color: var(--ember); color: var(--white); }
+  .shop-action-btn.primary:hover { background: var(--ember-dim); }
+
+  .shop-progress {
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    height: 4px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .shop-progress-bar {
+    height: 100%;
+    background: var(--success);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .shop-progress-label {
+    font-size: 11px;
+    color: var(--ash);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .store-section { margin-bottom: 24px; }
+
+  .store-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .store-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .store-icon.woolworths { background: rgba(0,100,50,0.3); }
+  .store-icon.checkers { background: rgba(220,30,30,0.2); }
+  .store-icon.butcher { background: rgba(196,98,45,0.25); }
+  .store-icon.pantry { background: rgba(212,168,83,0.2); }
+  .store-icon.manual { background: rgba(107,95,84,0.3); }
+
+  .store-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .store-count {
+    font-size: 11px;
+    color: var(--ash);
+  }
+
+  .shop-items { display: flex; flex-direction: column; gap: 2px; }
+
+  .shop-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--smoke);
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+  }
+
+  .shop-item:hover { border-color: rgba(196,98,45,0.2); }
+
+  .shop-item.checked {
+    opacity: 0.45;
+  }
+
+  .shop-item.checked .shop-item-name {
+    text-decoration: line-through;
+    color: var(--ash);
+  }
+
+  .shop-item-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: none;
+  }
+
+  .shop-item.checked .shop-item-check {
+    background: var(--success);
+    border-color: var(--success);
+  }
+
+  .shop-item-check svg { display: none; width: 12px; height: 12px; }
+  .shop-item.checked .shop-item-check svg { display: block; }
+
+  .shop-item-body { flex: 1; min-width: 0; }
+
+  .shop-item-name {
+    font-size: 14px;
+    color: var(--cream);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shop-item-detail {
+    font-size: 11px;
+    color: var(--ash);
+    margin-top: 1px;
+  }
+
+  .shop-item-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .tag-essential { background: rgba(196,98,45,0.2); color: var(--ember); }
+  .tag-optional { background: rgba(107,95,84,0.3); color: var(--ash); }
+  .tag-low { background: rgba(212,168,83,0.2); color: var(--gold); }
+
+  .shop-item-delete {
+    background: none;
+    border: none;
+    color: var(--ash);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+  }
+
+  .shop-item:hover .shop-item-delete { opacity: 1; }
+
+  /* Add item row */
+  .add-item-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px dashed rgba(196,98,45,0.3);
+    align-items: center;
+    cursor: text;
+  }
+
+  .add-item-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 13px;
+    outline: none;
+    padding: 0;
+  }
+
+  .add-item-input::placeholder { color: rgba(107,95,84,0.7); }
+
+  .add-item-btn {
+    background: none;
+    border: none;
+    color: var(--ember);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+  }
+
+  /* Pantry warning banner */
+  .pantry-warning {
+    background: rgba(212,168,83,0.1);
+    border: 1px solid rgba(212,168,83,0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--gold);
+    line-height: 1.5;
+  }
+
+  .pantry-warning strong { color: var(--gold); display: block; margin-bottom: 4px; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* Empty shop state */
+  .shop-empty {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .shop-empty-icon { font-size: 40px; display: block; margin-bottom: 14px; }
+  .shop-empty-title { font-family: var(--font-display); font-size: 20px; color: var(--white); margin-bottom: 8px; }
+  .shop-empty-text { font-size: 13px; color: var(--ash); line-height: 1.6; }
+
+  .generate-btn {
+    margin-top: 20px;
+    padding: 14px 24px;
+    background: var(--ember);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .generate-btn:hover { background: var(--ember-dim); }
+
+  /* Generating state */
+  .generating-overlay {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+    gap: 16px;
+    text-align: center;
+  }
+  .generating-overlay.visible { display: flex; }
+
+  .gen-spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(196,98,45,0.2);
+    border-top-color: var(--ember);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .gen-label { font-size: 13px; color: var(--ash); }
+  .gen-title { font-family: var(--font-display); font-size: 18px; color: var(--white); }
+
+  /* ── RATINGS ── */
+  .rating-card {
+    background: var(--smoke);
+    border: 1px solid rgba(196,98,45,0.15);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .rating-meal-name { font-family: var(--font-display); font-size: 20px; color: var(--white); margin-bottom: 4px; }
+  .rating-date { font-size: 11px; color: var(--ash); margin-bottom: 20px; }
+
+  .rater-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .rater-name { font-size: 13px; font-weight: 500; color: var(--cream); width: 70px; }
+
+  .star-row { display: flex; gap: 6px; }
+
+  .star {
+    width: 28px; height: 28px;
+    background: none; border: none;
+    cursor: pointer; font-size: 20px;
+    line-height: 1; opacity: 0.3;
+    transition: opacity 0.15s, transform 0.15s;
+    padding: 0;
+  }
+  .star.lit { opacity: 1; }
+  .star:hover { transform: scale(1.2); }
+
+  .score-display { font-size: 18px; font-weight: 700; color: var(--ember); width: 32px; text-align: right; }
+
+  .cook-again-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 4px;
+  }
+
+  .cook-again-label { font-size: 13px; color: var(--cream); }
+
+  .toggle-row { display: flex; gap: 8px; }
+
+  .toggle-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: none;
+    color: var(--ash);
+    font-size: 12px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .toggle-btn.selected-yes { background: rgba(74,124,89,0.25); border-color: var(--success); color: var(--success); }
+  .toggle-btn.selected-no { background: rgba(196,98,45,0.2); border-color: var(--ember); color: var(--ember); }
+
+  .notes-input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 10px 12px;
+    resize: none;
+    height: 70px;
+    outline: none;
+    margin-top: 12px;
+  }
+  .notes-input::placeholder { color: var(--ash); }
+  .notes-input:focus { border-color: rgba(196,98,45,0.4); }
+
+  .submit-rating-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--ember);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s;
+  }
+  .submit-rating-btn:hover { background: var(--ember-dim); }
+
+  /* ── DATABASE ── */
+  .db-section { margin-bottom: 28px; }
+
+  .db-section-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--white);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .db-count { font-family: var(--font-body); font-size: 12px; background: rgba(196,98,45,0.2); color: var(--ember); padding: 2px 8px; border-radius: 10px; }
+
+  .db-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .db-item {
+    background: var(--smoke);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .db-item-left { display: flex; flex-direction: column; gap: 3px; }
+  .db-item-name { font-size: 14px; color: var(--white); font-weight: 500; }
+  .db-item-meta { font-size: 11px; color: var(--ash); }
+  .db-score { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--ember); }
+
+  .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 20px 0; }
+
+  /* ── PANTRY ── */
+  .pantry-search {
+    width: 100%;
+    background: var(--smoke);
+    border: 1px solid rgba(196,98,45,0.3);
+    border-radius: var(--radius);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    margin-bottom: 16px;
+  }
+  .pantry-search:focus { border-color: var(--ember); }
+  .pantry-search::placeholder { color: var(--ash); }
+
+  .pantry-category { margin-bottom: 20px; }
+
+  .pantry-cat-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ash); margin-bottom: 8px; }
+
+  .pantry-items { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .pantry-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .pantry-chip.in-stock { background: rgba(74,124,89,0.15); border-color: rgba(74,124,89,0.4); color: #7bc49a; }
+  .pantry-chip.low-stock { background: rgba(212,168,83,0.1); border-color: rgba(212,168,83,0.4); color: var(--gold); }
+  .pantry-chip.out-stock { background: rgba(196,98,45,0.1); border-color: rgba(196,98,45,0.3); color: var(--ember); }
+
+  .message-bubble strong { color: var(--gold); font-weight: 600; }
+  .message-bubble em { color: var(--ember); font-style: normal; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-top">
+    <div class="brand">
+      <span class="brand-eyebrow">Sandton · Gauteng</span>
+      <span class="brand-name">Miller Kitchen</span>
+    </div>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      <span class="status-label">Chef Active</span>
+    </div>
+  </div>
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('chat')">Chef</button>
+    <button class="tab-btn" onclick="switchTab('week')">This Week</button>
+    <button class="tab-btn" onclick="switchTab('shop')">Shopping</button>
+    <button class="tab-btn" onclick="switchTab('rate')">Rate</button>
+    <button class="tab-btn" onclick="switchTab('database')">Favourites</button>
+    <button class="tab-btn" onclick="switchTab('pantry')">Pantry</button>
+  </nav>
+</header>
+
+<main class="main-content">
+
+  <!-- CHAT -->
+  <div class="panel active" id="panel-chat">
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="message assistant">
+          <div class="message-bubble">
+            <strong>Welcome back, Stuart.</strong><br><br>
+            Ask me anything about meals, planning, recipes, braai technique — or start a Sunday planning session to generate this week's shopping list.<br><br>
+            What are we working on?
+          </div>
+          <span class="message-time">Now</span>
+        </div>
+      </div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="quick-prompts">
+          <button class="quick-btn" onclick="quickPrompt('Start Sunday planning session')">🗓 Sunday Planning</button>
+          <button class="quick-btn" onclick="quickPrompt('What should I cook tonight?')">🍽 Tonight</button>
+          <button class="quick-btn" onclick="quickPrompt('Give me a braai menu for this weekend')">🔥 Braai Menu</button>
+          <button class="quick-btn" onclick="quickPrompt('Suggest a great salad')">🥗 Salad</button>
+          <button class="quick-btn" onclick="quickPrompt('Traeger smoker ideas for this weekend')">💨 Smoker</button>
+          <button class="quick-btn" onclick="generateShoppingList()">🛒 Generate Shopping List</button>
+        </div>
+        <div class="input-row">
+          <textarea class="chat-input" id="chatInput" placeholder="Ask your chef..." rows="1"
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK -->
+  <div class="panel" id="panel-week">
+    <div class="section-label">Week of 21 June 2026</div>
+    <div class="action-card" onclick="switchToChat('Start Sunday planning session for this week')">
+      <div class="action-card-label">Ready to plan?</div>
+      <div class="action-card-title">Start Sunday Planning Session →</div>
+    </div>
+    <div class="day-cards">
+      <div class="day-card"><div class="day-card-header"><span class="day-name">Monday</span></div><div class="day-meal-name">No meal planned yet</div><div class="day-protein">Start a planning session</div></div>
+      <div class="day-card"><div class="day-card-header"><span class="day-name">Tuesday</span></div><div class="day-meal-name">No meal planned yet</div></div>
+      <div class="day-card leftover"><div class="day-card-header"><span class="day-name">Wednesday</span><span class="day-badge badge-leftover">Leftover Night</span></div><div class="day-meal-name">No meal planned yet</div></div>
+      <div class="day-card"><div class="day-card-header"><span class="day-name">Thursday</span></div><div class="day-meal-name">No meal planned yet</div></div>
+      <div class="day-card leftover"><div class="day-card-header"><span class="day-name">Friday</span><span class="day-badge badge-leftover">Leftover Night</span></div><div class="day-meal-name">No meal planned yet</div></div>
+      <div class="day-card"><div class="day-card-header"><span class="day-name">Saturday</span><span class="day-badge badge-braai">Braai / Weekend</span></div><div class="day-meal-name">No meal planned yet</div></div>
+      <div class="day-card"><div class="day-card-header"><span class="day-name">Sunday</span><span class="day-badge badge-smoker">Smoker Day</span></div><div class="day-meal-name">No meal planned yet</div></div>
+    </div>
+  </div>
+
+  <!-- SHOPPING LIST -->
+  <div class="panel" id="panel-shop">
+
+    <!-- Empty state -->
+    <div id="shopEmpty">
+      <div class="shop-empty">
+        <span class="shop-empty-icon">🛒</span>
+        <div class="shop-empty-title">No list yet</div>
+        <div class="shop-empty-text">
+          Complete a Sunday planning session first. The chef will generate your list split by store, cross-checked against your pantry, with low-stock items flagged automatically.
+        </div>
+        <button class="generate-btn" onclick="generateShoppingList()">Generate from This Week's Menu</button>
+      </div>
+    </div>
+
+    <!-- Generating state -->
+    <div class="generating-overlay" id="shopGenerating">
+      <div class="gen-spinner"></div>
+      <div class="gen-title">Building your list</div>
+      <div class="gen-label">Cross-checking pantry status...</div>
+    </div>
+
+    <!-- Active list -->
+    <div id="shopList" style="display:none;">
+
+      <div class="shop-header">
+        <div>
+          <div class="section-label" style="margin-bottom:2px;">Shopping List</div>
+          <div class="shop-meta" id="shopMeta">0 items remaining</div>
+        </div>
+        <button class="shop-action-btn" style="width:auto;padding:8px 14px;" onclick="clearChecked()">Clear done</button>
+      </div>
+
+      <div class="shop-progress-label">
+        <span id="progressLabel">0% complete</span>
+        <span id="progressCount"></span>
+      </div>
+      <div class="shop-progress"><div class="shop-progress-bar" id="progressBar" style="width:0%"></div></div>
+
+      <div class="shop-actions">
+        <button class="shop-action-btn" onclick="uncheckAll()">↺ Uncheck all</button>
+        <button class="shop-action-btn primary" onclick="generateShoppingList()">⟳ Regenerate</button>
+      </div>
+
+      <!-- Pantry warning -->
+      <div class="pantry-warning" id="pantryWarning" style="display:none;">
+        <strong>⚠ Low pantry items included</strong>
+        <span id="pantryWarningText"></span>
+      </div>
+
+      <div id="storeGroups"></div>
+
+    </div>
+  </div>
+
+  <!-- RATE -->
+  <div class="panel" id="panel-rate">
+    <div class="section-label">Rate Last Night's Meal</div>
+    <div class="rating-card">
+      <div class="rating-meal-name" id="ratingMealName">What did you cook?</div>
+      <div class="rating-date">Tell the chef below, then rate it</div>
+      <div class="rater-row">
+        <span class="rater-name">Stuart</span>
+        <div class="star-row" id="stars-stuart"></div>
+        <span class="score-display" id="score-stuart">—</span>
+      </div>
+      <div class="rater-row">
+        <span class="rater-name">Nicola</span>
+        <div class="star-row" id="stars-nicola"></div>
+        <span class="score-display" id="score-nicola">—</span>
+      </div>
+      <div class="rater-row">
+        <span class="rater-name">Kids</span>
+        <div class="star-row" id="stars-kids"></div>
+        <span class="score-display" id="score-kids">—</span>
+      </div>
+      <div class="cook-again-row">
+        <span class="cook-again-label">Cook again?</span>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="btn-yes" onclick="setCookAgain('yes')">Yes</button>
+          <button class="toggle-btn" id="btn-no" onclick="setCookAgain('no')">No</button>
+        </div>
+      </div>
+      <textarea class="notes-input" id="ratingNotes" placeholder="What worked? What needs improving next time?"></textarea>
+      <button class="submit-rating-btn" onclick="submitRating()">Save Rating & Send to Chef</button>
+    </div>
+  </div>
+
+  <!-- DATABASE -->
+  <div class="panel" id="panel-database">
+    <div class="section-label">Family Learning Database</div>
+    <div class="db-section">
+      <div class="db-section-title">Top Family Meals <span class="db-count">Pending</span></div>
+      <div class="db-list">
+        <div class="db-item"><div class="db-item-left"><span class="db-item-name">No meals rated yet</span><span class="db-item-meta">Rate your meals to build this list</span></div><span class="db-score">—</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="db-section">
+      <div class="db-section-title">Braai Favourites <span class="db-count">Pending</span></div>
+      <div class="db-list">
+        <div class="db-item"><div class="db-item-left"><span class="db-item-name">No braai meals rated yet</span><span class="db-item-meta">Fire it up and rate it</span></div><span class="db-score">—</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="db-section">
+      <div class="db-section-title">Smoker Dishes <span class="db-count">Pending</span></div>
+      <div class="db-list">
+        <div class="db-item"><div class="db-item-left"><span class="db-item-name">No smoker meals rated yet</span><span class="db-item-meta">Get the Traeger running</span></div><span class="db-score">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTRY -->
+  <div class="panel" id="panel-pantry">
+    <div class="section-label">Pantry Status</div>
+    <input type="text" class="pantry-search" placeholder="Search pantry..." oninput="filterPantry(this.value)">
+
+    <div class="pantry-category">
+      <div class="pantry-cat-label">Proteins (Freezer)</div>
+      <div class="pantry-items">
+        <span class="pantry-chip in-stock" data-item="Chicken thighs">Chicken thighs</span>
+        <span class="pantry-chip low-stock" data-item="Ribeye">Ribeye</span>
+        <span class="pantry-chip out-stock" data-item="Salmon">Salmon</span>
+        <span class="pantry-chip in-stock" data-item="Lamb rack">Lamb rack</span>
+        <span class="pantry-chip out-stock" data-item="Prawns">Prawns</span>
+        <span class="pantry-chip in-stock" data-item="Pork belly">Pork belly</span>
+        <span class="pantry-chip in-stock" data-item="Short rib">Short rib</span>
+      </div>
+    </div>
+
+    <div class="pantry-category">
+      <div class="pantry-cat-label">Sauces & Condiments</div>
+      <div class="pantry-items">
+        <span class="pantry-chip in-stock" data-item="Fish sauce">Fish sauce</span>
+        <span class="pantry-chip in-stock" data-item="Soy sauce">Soy sauce</span>
+        <span class="pantry-chip in-stock" data-item="Oyster sauce">Oyster sauce</span>
+        <span class="pantry-chip low-stock" data-item="Miso paste">Miso paste</span>
+        <span class="pantry-chip in-stock" data-item="Harissa">Harissa</span>
+        <span class="pantry-chip in-stock" data-item="Tahini">Tahini</span>
+        <span class="pantry-chip out-stock" data-item="Gochujang">Gochujang</span>
+        <span class="pantry-chip in-stock" data-item="Dijon mustard">Dijon mustard</span>
+      </div>
+    </div>
+
+    <div class="pantry-category">
+      <div class="pantry-cat-label">Dry Pantry</div>
+      <div class="pantry-items">
+        <span class="pantry-chip in-stock" data-item="Arborio rice">Arborio rice</span>
+        <span class="pantry-chip in-stock" data-item="Pasta (various)">Pasta (various)</span>
+        <span class="pantry-chip in-stock" data-item="Chickpeas">Chickpeas</span>
+        <span class="pantry-chip low-stock" data-item="Panko">Panko</span>
+        <span class="pantry-chip in-stock" data-item="Coconut milk">Coconut milk</span>
+        <span class="pantry-chip in-stock" data-item="Stock (various)">Stock (various)</span>
+        <span class="pantry-chip in-stock" data-item="Jasmine rice">Jasmine rice</span>
+      </div>
+    </div>
+
+    <div class="pantry-category">
+      <div class="pantry-cat-label">Spices & Aromatics</div>
+      <div class="pantry-items">
+        <span class="pantry-chip in-stock" data-item="Smoked paprika">Smoked paprika</span>
+        <span class="pantry-chip in-stock" data-item="Cumin">Cumin</span>
+        <span class="pantry-chip in-stock" data-item="Coriander">Coriander</span>
+        <span class="pantry-chip in-stock" data-item="Za'atar">Za'atar</span>
+        <span class="pantry-chip in-stock" data-item="Sumac">Sumac</span>
+        <span class="pantry-chip low-stock" data-item="Star anise">Star anise</span>
+        <span class="pantry-chip in-stock" data-item="Dried chilli">Dried chilli</span>
+        <span class="pantry-chip in-stock" data-item="Ras el hanout">Ras el hanout</span>
+      </div>
+    </div>
+
+    <p style="font-size:11px;color:var(--ash);text-align:center;margin-top:12px;">
+      Tap chips to cycle: green = in stock, gold = low, red = out. Low and out-of-stock items auto-flag in your shopping list.
+    </p>
+  </div>
+
+</main>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const PROXY_URL = 'https://miller-kitchen-proxy.stuart-miller95.workers.dev';
+
+// ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
+const CHAT_SYSTEM_PROMPT = `You are the Miller Family Gourmet Home Chef — a personal executive chef, recipe developer, meal planner, nutrition-aware cooking coach, pantry manager and entertaining advisor for the Miller household in Sandton, Gauteng, South Africa.
+
+Primary objectives in order: exceptional flavour, fast weekday execution, strong family acceptance, high-protein healthy meals, memorable entertaining, great salads, strong braai and smoker capability, continuous improvement from family feedback.
+
+Household: 2 adults (Stuart and Nicola), 3 children aged 13, 11 and 8. No allergies. Children moderately adventurous (7/10). Avoid overly exotic weekday meals. Avoid raw tomatoes. Avoid strongly fishy seafood. Preferred seafood: salmon, snapper-style white fish, kingklip, prawns.
+
+Location: Sandton, Gauteng. Primary shops: Woolworths and Checkers FreshX. Johannesburg availability always considered.
+
+Cooking: Weekdays 30-45 min, high flavour, minimal cleanup. Cook 4 nights/week. 2 leftover nights. Weekends more ambitious.
+
+Proteins: Premium — ribeye, picanha, lamb rack, lamb shoulder, chicken thighs. Also: pork belly, short rib, salmon, kingklip, prawns, tuna. No boring chicken or mediocre beef. Never repeat same primary protein more than twice/week.
+
+Cuisine (ranked): Thai 9/10, Vietnamese 9/10, Italian 8/10, French 8/10, SA braai 8/10, Turkish 7/10, Lebanese 7/10, Indian 7/10, Chinese 7/10, Japanese 7/10, Mexican 7/10, Moroccan 6/10, Greek 5/10.
+
+Equipment: Traeger smoker, pizza oven, gas braai, air fryer, Thermomix, pressure cooker, stand mixer.
+
+Health: Stuart wants weight loss while maintaining/gaining muscle. Higher protein for whole family. Stuart 250g daily protein intent, Nicola 180g.
+
+Challenge rule: If Stuart suggests low-flavour or low-return idea, say "That will work, but there's a higher-flavour version worth considering" then explain weakness, better alternative, trade-off, recommended version.
+
+Style: Never start with agreement. Rate confidence as [Certain], [Likely] or [Guessing]. No filler phrases. Direct. Hold position unless genuinely new information given. Contractions always. No em dashes. Lead with main point. Vary sentence length.
+
+WEEKLY PLANNING: When Stuart asks to start a Sunday planning session or plan the week, guide him through the weekly planning system step by step. After all meals are approved, tell him clearly: "Your week is set. Tap the Shopping tab to generate your list, or tap This Week to see the full plan."
+
+When a weekly menu is finalised and approved, output a special marker at the END of your response in this exact format on its own line:
+MENU_UPDATE:Monday=MealName|protein|time,Tuesday=MealName|protein|time,Wednesday=LEFTOVER,Thursday=MealName|protein|time,Friday=LEFTOVER,Saturday=MealName|protein|time,Sunday=MealName|protein|time
+
+Use LEFTOVER for leftover nights. Only output this marker when the full week is approved, not during planning discussion.
+
+IMPORTANT: Never output JSON in the chat. Never show shopping list data in the chat. Keep all responses conversational. Shopping lists are only generated when explicitly requested from the Shopping tab.`;
+
+const SHOPPING_SYSTEM_PROMPT = `You are the Miller Family Gourmet Home Chef generating a structured shopping list.
+
+Respond ONLY with a valid JSON object. No text before or after. No markdown fences. No explanation.
+
+The JSON must match this exact structure:
+{
+  "week": "Week of [date]",
+  "stores": [
+    {
+      "store": "Woolworths",
+      "icon": "🟢",
+      "items": [
+        {
+          "name": "item name",
+          "detail": "quantity — which meals",
+          "essential": true,
+          "pantryNote": ""
+        }
+      ]
+    },
+    {
+      "store": "Checkers FreshX",
+      "icon": "🔴",
+      "items": []
+    },
+    {
+      "store": "Specialist Butcher",
+      "icon": "🔪",
+      "items": []
+    },
+    {
+      "store": "Manual / Other",
+      "icon": "📝",
+      "items": []
+    }
+  ],
+  "lowPantryItems": [],
+  "pantrySkipped": []
+}
+
+Rules:
+- Split items by store logically. Woolworths for premium produce, dairy, herbs. Checkers FreshX for bulk produce, staples. Specialist Butcher for premium cuts only. Manual for anything else.
+- Skip pantry items that are IN STOCK unless large quantities needed.
+- Include LOW STOCK items with pantryNote: "low stock".
+- Always include OUT OF STOCK items that are needed.
+- Be specific with quantities.`;
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let conversationHistory = [];
+let ratings = { stuart: 0, nicola: 0, kids: 0 };
+let cookAgain = null;
+let shopItems = [];
+let activeTab = 'chat';
+
+const WEEK_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+let weekMenu = {
+  Monday: null, Tuesday: null, Wednesday: null, Thursday: null,
+  Friday: null, Saturday: null, Sunday: null
+};
+
+// ─── PANTRY ───────────────────────────────────────────────────────────────────
+function getPantryState() {
+  const state = { inStock: [], lowStock: [], outStock: [] };
+  document.querySelectorAll('.pantry-chip').forEach(chip => {
+    const name = chip.dataset.item;
+    if (chip.classList.contains('in-stock')) state.inStock.push(name);
+    else if (chip.classList.contains('low-stock')) state.lowStock.push(name);
+    else state.outStock.push(name);
+  });
+  return state;
+}
+
+// ─── TAB SWITCHING ────────────────────────────────────────────────────────────
+const TABS = ['chat','week','shop','rate','database','pantry'];
+
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[TABS.indexOf(tab)].classList.add('active');
+  activeTab = tab;
+}
+
+function switchToChat(prompt) {
+  switchTab('chat');
+  document.getElementById('chatInput').value = prompt;
+  sendMessage();
+}
+
+// ─── CHAT ─────────────────────────────────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function quickPrompt(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+function formatMessage(content) {
+  // Strip any MENU_UPDATE marker before displaying
+  const clean = content.replace(/MENU_UPDATE:[^\n]*/g, '').trim();
+  return clean
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function addMessage(role, content) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message ' + role;
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+  div.innerHTML = `<div class="message-bubble">${formatMessage(content)}</div><span class="message-time">${time}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function parseMenuUpdate(text) {
+  const match = text.match(/MENU_UPDATE:([^\n]+)/);
+  if (!match) return;
+  const parts = match[1].split(',');
+  parts.forEach(part => {
+    const [day, info] = part.split('=');
+    if (!day || !info) return;
+    const [meal, protein, time] = info.split('|');
+    if (day === 'Wednesday' || day === 'Friday') {
+      weekMenu[day] = { meal: 'Leftover Night', protein: '', time: '', leftover: true };
+    } else {
+      weekMenu[day] = { meal, protein: protein || '', time: time || '', leftover: false };
+    }
+  });
+  renderWeekCards();
+}
+
+function renderWeekCards() {
+  const container = document.getElementById('weekCards');
+  container.innerHTML = '';
+  WEEK_DAYS.forEach(day => {
+    const data = weekMenu[day];
+    const card = document.createElement('div');
+    const isLeftover = data && data.leftover;
+    const isSat = day === 'Saturday';
+    const isSun = day === 'Sunday';
+
+    card.className = 'day-card' + (isLeftover ? ' leftover' : '');
+
+    let badge = '';
+    if (isLeftover) badge = '<span class="day-badge badge-leftover">Leftover Night</span>';
+    else if (isSat) badge = '<span class="day-badge badge-braai">Braai / Weekend</span>';
+    else if (isSun) badge = '<span class="day-badge badge-smoker">Smoker Day</span>';
+
+    if (data && !isLeftover) {
+      card.innerHTML = `
+        <div class="day-card-header">
+          <span class="day-name">${day}</span>
+          ${badge}
+        </div>
+        <div class="day-meal-name">${data.meal}</div>
+        <div class="day-meta">
+          ${data.protein ? `<span class="day-protein">${data.protein}</span>` : ''}
+          ${data.time ? `<span class="day-time">⏱ ${data.time}</span>` : ''}
+        </div>`;
+    } else if (isLeftover) {
+      card.innerHTML = `
+        <div class="day-card-header">
+          <span class="day-name">${day}</span>
+          ${badge}
+        </div>
+        <div class="day-meal-name">Leftover Night</div>`;
+    } else {
+      card.innerHTML = `
+        <div class="day-card-header">
+          <span class="day-name">${day}</span>
+          ${badge}
+        </div>
+        <div class="day-meal-name" style="color:var(--ash);font-size:15px;">No meal planned yet</div>`;
+    }
+    container.appendChild(card);
+  });
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('sendBtn');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  btn.disabled = true;
+
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  const typing = document.getElementById('typingIndicator');
+  typing.classList.add('visible');
+  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+
+  try {
+    const response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        system: CHAT_SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || 'Something went wrong. Try again.';
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    // Check for menu update marker silently
+    if (reply.includes('MENU_UPDATE:')) {
+      parseMenuUpdate(reply);
+    }
+
+    typing.classList.remove('visible');
+    addMessage('assistant', reply);
+
+  } catch (err) {
+    typing.classList.remove('visible');
+    addMessage('assistant', 'Connection issue. Check your network and try again.');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+// ─── SHOPPING LIST ────────────────────────────────────────────────────────────
+async function generateShoppingList() {
+  switchTab('shop');
+  document.getElementById('shopEmpty').style.display = 'none';
+  document.getElementById('shopList').style.display = 'none';
+  document.getElementById('shopGenerating').classList.add('visible');
+
+  const pantry = getPantryState();
+
+  // Build menu context from approved week
+  const menuContext = WEEK_DAYS.map(day => {
+    const d = weekMenu[day];
+    if (!d) return `${day}: not planned`;
+    if (d.leftover) return `${day}: Leftover Night`;
+    return `${day}: ${d.meal} (${d.protein})`;
+  }).join('\n');
+
+  const prompt = `Generate the shopping list for this week's approved menu:
+
+${menuContext}
+
+Pantry status:
+IN STOCK (skip unless large quantity needed): ${pantry.inStock.join(', ') || 'none'}
+LOW STOCK (include, flag as low stock): ${pantry.lowStock.join(', ') || 'none'}
+OUT OF STOCK (always include if needed): ${pantry.outStock.join(', ') || 'none'}
+
+Respond with JSON only. No text. No markdown.`;
+
+  // Build messages — include conversation history for context, then the shop prompt
+  const messages = [
+    ...conversationHistory,
+    { role: 'user', content: prompt }
+  ];
+
+  try {
+    const response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: SHOPPING_SYSTEM_PROMPT,
+        messages
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content?.[0]?.text || '';
+
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+
+    const listData = JSON.parse(jsonMatch[0]);
+    renderShoppingList(listData);
+
+  } catch (err) {
+    document.getElementById('shopGenerating').classList.remove('visible');
+    document.getElementById('shopEmpty').style.display = 'block';
+    document.getElementById('shopEmpty').querySelector('.shop-empty-text').textContent =
+      'Could not generate the list. Complete a Sunday planning session in the Chef tab first, approve all meals, then try again.';
+  }
+}
+
+function renderShoppingList(data) {
+  document.getElementById('shopGenerating').classList.remove('visible');
+  shopItems = [];
+
+  const storeGroups = document.getElementById('storeGroups');
+  storeGroups.innerHTML = '';
+
+  data.stores.forEach(store => {
+    if (!store.items || store.items.length === 0) return;
+
+    const section = document.createElement('div');
+    section.className = 'store-section';
+
+    const iconClass = store.store.toLowerCase().includes('woolworths') ? 'woolworths'
+      : store.store.toLowerCase().includes('checkers') ? 'checkers'
+      : store.store.toLowerCase().includes('butcher') ? 'butcher'
+      : 'manual';
+
+    const header = document.createElement('div');
+    header.className = 'store-header';
+    header.innerHTML = `
+      <div class="store-icon ${iconClass}">${store.icon}</div>
+      <span class="store-name">${store.store}</span>
+      <span class="store-count">${store.items.length} items</span>`;
+
+    const itemList = document.createElement('div');
+    itemList.className = 'shop-items';
+
+    store.items.forEach((item, idx) => {
+      const id = `item-${store.store.replace(/\W/g,'-')}-${idx}`;
+      const isLow = item.pantryNote && item.pantryNote.toLowerCase().includes('low');
+      shopItems.push({ id, checked: false, store: store.store });
+
+      const tagClass = isLow ? 'tag-low' : item.essential ? 'tag-essential' : 'tag-optional';
+      const tagText = isLow ? 'Low stock' : item.essential ? 'Essential' : 'Optional';
+
+      const row = document.createElement('div');
+      row.className = 'shop-item';
+      row.id = id;
+      row.onclick = () => toggleItem(id);
+      row.innerHTML = `
+        <div class="shop-item-check">
+          <svg viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 5 4.5 8.5 11 1"></polyline>
+          </svg>
+        </div>
+        <div class="shop-item-body">
+          <div class="shop-item-name">${item.name}</div>
+          ${item.detail ? `<div class="shop-item-detail">${item.detail}</div>` : ''}
+        </div>
+        <span class="shop-item-tag ${tagClass}">${tagText}</span>
+        <button class="shop-item-delete" onclick="deleteItem(event,'${id}')" title="Remove">×</button>`;
+
+      itemList.appendChild(row);
+    });
+
+    // Add item input
+    const addRow = document.createElement('div');
+    addRow.className = 'add-item-row';
+    addRow.innerHTML = `
+      <input class="add-item-input" placeholder="Add item..."
+        onkeydown="addItemKey(event,this,'${store.store}')">
+      <button class="add-item-btn" onclick="addItemFromInput(this.previousElementSibling,'${store.store}')">+</button>`;
+
+    section.appendChild(header);
+    section.appendChild(itemList);
+    section.appendChild(addRow);
+    storeGroups.appendChild(section);
+  });
+
+  if (data.lowPantryItems && data.lowPantryItems.length > 0) {
+    document.getElementById('pantryWarning').style.display = 'block';
+    document.getElementById('pantryWarningText').textContent =
+      `Low stock items included: ${data.lowPantryItems.join(', ')}.`;
+  }
+
+  document.getElementById('shopList').style.display = 'block';
+  updateProgress();
+}
+
+function toggleItem(id) {
+  const item = shopItems.find(i => i.id === id);
+  if (!item) return;
+  item.checked = !item.checked;
+  document.getElementById(id).classList.toggle('checked', item.checked);
+  updateProgress();
+}
+
+function deleteItem(e, id) {
+  e.stopPropagation();
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  shopItems = shopItems.filter(i => i.id !== id);
+  updateProgress();
+}
+
+function addItemKey(e, input, store) {
+  if (e.key === 'Enter') addItemFromInput(input, store);
+}
+
+function addItemFromInput(input, store) {
+  const val = input.value.trim();
+  if (!val) return;
+  const id = 'manual-' + Date.now();
+  shopItems.push({ id, checked: false, store });
+  const row = document.createElement('div');
+  row.className = 'shop-item';
+  row.id = id;
+  row.onclick = () => toggleItem(id);
+  row.innerHTML = `
+    <div class="shop-item-check">
+      <svg viewBox="0 0 12 10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="1 5 4.5 8.5 11 1"></polyline>
+      </svg>
+    </div>
+    <div class="shop-item-body"><div class="shop-item-name">${val}</div></div>
+    <span class="shop-item-tag tag-optional">Added</span>
+    <button class="shop-item-delete" onclick="deleteItem(event,'${id}')" title="Remove">×</button>`;
+  input.parentElement.before(row);
+  input.value = '';
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = shopItems.length;
+  const done = shopItems.filter(i => i.checked).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '% complete';
+  document.getElementById('progressCount').textContent = `${done}/${total}`;
+  document.getElementById('shopMeta').textContent = `${total - done} item${total - done !== 1 ? 's' : ''} remaining`;
+}
+
+function clearChecked() {
+  shopItems.filter(i => i.checked).forEach(i => {
+    const el = document.getElementById(i.id);
+    if (el) el.remove();
+  });
+  shopItems = shopItems.filter(i => !i.checked);
+  updateProgress();
+}
+
+function uncheckAll() {
+  shopItems.forEach(i => {
+    i.checked = false;
+    const el = document.getElementById(i.id);
+    if (el) el.classList.remove('checked');
+  });
+  updateProgress();
+}
+
+// ─── RATINGS ──────────────────────────────────────────────────────────────────
+function buildStars(person) {
+  const container = document.getElementById('stars-' + person);
+  container.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'star';
+    btn.textContent = '★';
+    btn.onclick = () => setRating(person, i);
+    container.appendChild(btn);
+  }
+}
+
+function setRating(person, score) {
+  ratings[person] = score;
+  document.querySelectorAll('#stars-' + person + ' .star').forEach((s,i) => s.classList.toggle('lit', i < score));
+  document.getElementById('score-' + person).textContent = score;
+}
+
+function setCookAgain(val) {
+  cookAgain = val;
+  document.getElementById('btn-yes').className = 'toggle-btn' + (val==='yes' ? ' selected-yes' : '');
+  document.getElementById('btn-no').className = 'toggle-btn' + (val==='no' ? ' selected-no' : '');
+}
+
+async function submitRating() {
+  const notes = document.getElementById('ratingNotes').value;
+  const avg = ((ratings.stuart + ratings.nicola + ratings.kids) / 3).toFixed(1);
+  const summary = `Dinner rating:\nStuart: ${ratings.stuart}/10\nNicola: ${ratings.nicola}/10\nKids: ${ratings.kids}/10\nFamily average: ${avg}/10\nCook again: ${cookAgain || 'not specified'}\nNotes: ${notes || 'none'}\n\nAcknowledge this, update the Family Learning Database, and give me one specific improvement for next time.`;
+  switchTab('chat');
+  document.getElementById('chatInput').value = summary;
+  await sendMessage();
+}
+
+// ─── PANTRY CHIPS ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.pantry-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    if (chip.classList.contains('in-stock')) chip.classList.replace('in-stock','low-stock');
+    else if (chip.classList.contains('low-stock')) chip.classList.replace('low-stock','out-stock');
+    else chip.classList.replace('out-stock','in-stock');
+  });
+});
+
+function filterPantry(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.pantry-chip').forEach(chip => {
+    chip.style.display = chip.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildStars('stuart');
+buildStars('nicola');
+buildStars('kids');
+renderWeekCards();
+</script>
+
+</body>
+</html>
